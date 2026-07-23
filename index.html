@@ -79,13 +79,13 @@
                 <p class="status" style="font-size: 0.9em; color: #333; font-weight: bold; margin-top: 0;">
                     合計 <span id="list-total">0</span> 問 
                     （未完了: <span id="list-active" style="color:#d9534f;">0</span> 問 / 
-                    完了: <span id="list-graduated" style="color:#28a745;">0</span> 問）
+                    定着: <span id="list-memorized" style="color:#28a745;">0</span> 問）
                 </p>
                 
                 <div style="margin-bottom: 10px;">
                     <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">すべて</button>
                     <button class="filter-btn" id="filter-active" onclick="setFilter('active')">未完了</button>
-                    <button class="filter-btn" id="filter-graduated" onclick="setFilter('graduated')">🎓完了</button>
+                    <button class="filter-btn" id="filter-memorized" onclick="setFilter('memorized')">🎓定着</button>
                 </div>
 
                 <input type="text" id="search-input" class="search-box" placeholder="🔍 検索（問題文・答え）" oninput="renderQuizList()">
@@ -194,11 +194,11 @@
 
         function updateUI() {
             const activeCount = quizData.filter(q => q.count < TARGET_COUNT).length;
-            const graduatedCount = quizData.filter(q => q.count >= TARGET_COUNT).length;
+            const memorizedCount = quizData.filter(q => q.count >= TARGET_COUNT).length;
 
             document.getElementById('list-total').innerText = quizData.length;
             document.getElementById('list-active').innerText = activeCount;
-            document.getElementById('list-graduated').innerText = graduatedCount;
+            document.getElementById('list-memorized').innerText = memorizedCount;
 
             renderQuizList();
         }
@@ -267,7 +267,7 @@
             currentFilter = filterType;
             document.getElementById('filter-all').classList.remove('active');
             document.getElementById('filter-active').classList.remove('active');
-            document.getElementById('filter-graduated').classList.remove('active');
+            document.getElementById('filter-memorized').classList.remove('active');
             document.getElementById(`filter-${filterType}`).classList.add('active');
             renderQuizList();
         }
@@ -356,7 +356,7 @@
 
             const activeQuizzesCount = quizData.filter(q => q.count < TARGET_COUNT).length;
 
-            // 2. 問題数が全くない / 全問卒業している場合
+            // 2. 問題数が全くない / 全問定着している場合
             if (activeQuizzesCount === 0) {
                 playArea.style.display = 'none';
                 summaryArea.style.display = 'none';
@@ -364,7 +364,7 @@
                 if (quizData.length === 0) {
                     document.getElementById('empty-text').innerText = '問題が登録されていません。下のフォームから問題を登録してください。';
                 } else {
-                    document.getElementById('empty-text').innerText = '🎉 すべての問題を完了（卒業）しました！問題を追加するか正解数をリセットしてください。';
+                    document.getElementById('empty-text').innerText = '🎉 すべての問題を完了（定着）しました！問題を追加するか正解数をリセットしてください。';
                 }
                 currentQuestionIndex = -1;
                 return;
@@ -439,7 +439,7 @@
                 let msg = `⭕ 正解！ (正解回数: ${quizData[currentQuestionIndex].count}/${TARGET_COUNT})<br><span style="font-size:0.9em; color:#555;">【解答: ${primaryAnswer}】</span>`;
 
                 if (quizData[currentQuestionIndex].count >= TARGET_COUNT) {
-                    msg += '<br>✨ この問題は卒業しました！';
+                    msg += '<br>✨ この問題は定着しました！';
                 }
                 resultDiv.innerHTML = msg;
                 updateUI();
@@ -459,7 +459,7 @@
             
             const resultDiv = document.getElementById('result-message');
             resultDiv.className = 'success';
-            resultDiv.innerHTML = `✨「覚えた！」として卒業にしました！<br><span style="font-size:0.9em; color:#555;">【解答: ${getPrimaryAnswer()}】</span>`;
+            resultDiv.innerHTML = `✨「覚えた！」として定着にしました！<br><span style="font-size:0.9em; color:#555;">【解答: ${getPrimaryAnswer()}】</span>`;
             
             updateUI();
             prepareNextStep();
@@ -496,7 +496,7 @@
                 let matchesFilter = true;
                 if (currentFilter === 'active') {
                     matchesFilter = item.count < TARGET_COUNT;
-                } else if (currentFilter === 'graduated') {
+                } else if (currentFilter === 'memorized') {
                     matchesFilter = item.count >= TARGET_COUNT;
                 }
 
@@ -504,12 +504,12 @@
                     matchCount++;
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'quiz-item';
-                    const isGraduated = item.count >= TARGET_COUNT ? '【🎓卒業】' : `(正解:${item.count}/${TARGET_COUNT})`;
+                    const isMemorized = item.count >= TARGET_COUNT ? '【🎓定着】' : `(正解:${item.count}/${TARGET_COUNT})`;
                     
                     itemDiv.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="cursor:pointer; font-weight:bold; color:#333; font-size:0.95em;" onclick="toggleEditForm(${index})">
-                                Q. ${item.question} <small style="color:#666; font-weight:normal;">${isGraduated}</small>
+                                Q. ${item.question} <small style="color:#666; font-weight:normal;">${isMemorized}</small>
                             </span>
                             <button class="btn-sm" style="background-color:#6c757d;" onclick="toggleEditForm(${index})">編集</button>
                         </div>

@@ -5,673 +5,469 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>暗記クイズアプリ</title>
   <style>
-    :root {
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --success: #10b981;
-      --danger: #ef4444;
-      --bg-gray: #f3f4f6;
-      --card-bg: #ffffff;
-      --border-color: #e5e7eb;
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-    }
-
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-gray);
-      color: var(--text-main);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* 2カラムレイアウト */
-    .app-container {
-      display: flex;
-      width: 100%;
-      height: 100vh;
-    }
-
-    /* サイドバー（問題一覧） */
-    .sidebar {
-      width: 360px;
-      background-color: var(--card-bg);
-      border-right: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
+      background-color: #f0f2f5;
+      margin: 0;
       padding: 20px;
+      color: #333;
     }
 
-    .sidebar h2 {
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-    }
-
-    .search-box {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-    }
-
-    .question-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .question-item {
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      background-color: #fafafa;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .question-item.graduated {
-      opacity: 0.6;
-      background-color: #eef2ff;
-    }
-
-    .question-info {
-      overflow: hidden;
-      margin-right: 8px;
-    }
-
-    .question-text {
-      font-weight: 600;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .answer-text {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .badge {
-      font-size: 0.75rem;
-      padding: 2px 6px;
-      border-radius: 12px;
-      background-color: var(--border-color);
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .badge.graduated {
-      background-color: #c7d2fe;
-      color: #3730a3;
-    }
-
-    .item-actions {
-      display: flex;
-      gap: 4px;
-    }
-
-    .btn-sm {
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-edit { background-color: #e5e7eb; color: #374151; }
-    .btn-delete { background-color: #fee2e2; color: #991b1b; }
-
-    /* メインコンテンツ */
-    .main-content {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+    .container {
+      display: grid;
+      grid-template-columns: 360px 1fr;
       gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .card {
-      background-color: var(--card-bg);
+      background: #ffffff;
       border-radius: 8px;
-      padding: 20px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
     }
 
-    .card h2 {
-      font-size: 1.1rem;
-      margin-bottom: 12px;
+    h2, h3 {
+      margin-top: 0;
+      color: #1a1a1a;
+      font-weight: bold;
     }
 
-    /* クイズカード */
-    .quiz-header {
+    /* --- 左エリア：問題一覧・編集 --- */
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .btn-filter {
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.85em;
+      cursor: pointer;
+    }
+    .btn-filter.active { background-color: #28a745; color: white; }
+    .btn-filter.inactive { background-color: #e0e0e0; color: #555; }
+
+    .search-bar {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid #007bff;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      outline: none;
+    }
+
+    .question-list {
+      max-height: 520px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.88em;
     }
 
-    .mode-select {
+    .question-item-text {
+      flex: 1;
+      padding-right: 10px;
+      line-height: 1.4;
+    }
+
+    .btn-edit {
+      background-color: #6c757d;
+      color: white;
+      border: none;
       padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.85em;
+      cursor: pointer;
     }
 
-    .quiz-display {
-      min-height: 120px;
+    /* --- 右エリア：問題出題 --- */
+    .mode-buttons {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
-      text-align: center;
-      background-color: #f9fafb;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-mode {
+      background-color: #6f42c1;
+      color: white;
+      border: none;
+      padding: 8px 18px;
       border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-mode.active {
+      outline: 3px solid #ffc107;
+    }
+
+    .question-status {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 15px;
     }
 
     .question-title {
-      font-size: 1.25rem;
+      font-size: 1.15em;
       font-weight: bold;
-      margin-bottom: 12px;
+      line-height: 1.6;
+      margin: 15px 0 20px 0;
     }
 
-    .result-message {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-top: 8px;
+    .input-answer {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 1em;
     }
 
-    .result-message.correct { color: var(--success); }
-    .result-message.incorrect { color: var(--danger); }
-
-    .primary-answer-display {
-      margin-top: 6px;
-      font-size: 1rem;
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    .quiz-inputs {
+    .action-buttons {
       display: flex;
       gap: 10px;
     }
 
-    .input-field {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    .btn {
-      padding: 10px 18px;
-      border-radius: 6px;
+    .btn-action {
       border: none;
-      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 4px;
+      color: white;
+      font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s;
+      font-size: 0.95em;
     }
+    .btn-answer { background-color: #007bff; }
+    .btn-remember { background-color: #28a745; }
+    .btn-dontknow { background-color: #ff9800; }
 
-    .btn-primary { background-color: var(--primary); color: white; }
-    .btn-primary:hover { background-color: var(--primary-hover); }
-    .btn-success { background-color: var(--success); color: white; }
-    .btn-secondary { background-color: #6b7280; color: white; }
-
-    /* 登録カード */
-    .register-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .form-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
-    textarea.input-field {
-      min-height: 80px;
-      resize: vertical;
-    }
-
+    /* --- 右エリア：問題登録 --- */
     .tab-buttons {
       display: flex;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
 
-    .tab-btn {
-      padding: 6px 12px;
-      border: 1px solid var(--border-color);
-      background-color: #f3f4f6;
-      border-radius: 6px;
+    .btn-tab {
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 0.85rem;
+    }
+    .btn-tab.active { background-color: #007bff; color: white; }
+    .btn-tab.inactive { background-color: #e0e0e0; color: #666; }
+
+    .form-group {
+      margin-bottom: 15px;
     }
 
-    .tab-btn.active {
-      background-color: var(--primary);
+    .form-label {
+      display: block;
+      font-weight: bold;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+
+    textarea, input[type="text"].form-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.95em;
+    }
+
+    .btn-submit {
+      background-color: #007bff;
       color: white;
-      border-color: var(--primary);
-    }
-
-    /* レスポンシブ */
-    @media (max-width: 768px) {
-      .app-container {
-        flex-direction: column;
-        height: auto;
-        overflow: auto;
-      }
-      body { height: auto; overflow: auto; }
-      .sidebar { width: 100%; height: 300px; }
-      .main-content { flex: none; }
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <div class="app-container">
-    <!-- サイドバー：問題一覧 -->
-    <div class="sidebar">
-      <h2>問題一覧 (<span id="total-count">0</span>)</h2>
-      <input type="text" id="search-input" class="search-box" placeholder="キーワードで検索..." oninput="renderQuestionList()">
-      
-      <div id="question-list" class="question-list">
-        <!-- JSで問題項目をレンダリング -->
-      </div>
+<div class="container">
+  <!-- 左カラム：問題一覧・編集 -->
+  <div class="card">
+    <h2>問題一覧・編集</h2>
+    <p style="font-size: 0.95em; margin-bottom: 15px;">
+      合計 <strong id="total-count">0</strong> 問（未完了:<span style="color:red;" id="uncompleted-count">0</span> 問 / 完了:<span style="color:green;" id="completed-count">0</span> 問）
+    </p>
+
+    <div class="filter-buttons">
+      <button class="btn-filter active">すべて</button>
+      <button class="btn-filter inactive">未完了</button>
+      <button class="btn-filter inactive">🎓完了</button>
     </div>
 
-    <!-- メインコンテンツ -->
-    <div class="main-content">
-      <!-- クイズ出題エリア -->
-      <div class="card">
-        <div class="quiz-header">
-          <h2>クイズ解答エリア</h2>
-          <div>
-            <label for="quiz-mode" style="font-size: 0.85rem; color: var(--text-muted);">出題数: </label>
-            <select id="quiz-mode" class="mode-select" onchange="resetQuizSession()">
-              <option value="10">10問セット</option>
-              <option value="50">50問セット</option>
-              <option value="100">100問セット</option>
-              <option value="all">全問セット</option>
-            </select>
-          </div>
-        </div>
+    <input type="text" class="search-bar" id="search-input" placeholder="🔍 検索（問題文・答え）" oninput="renderQuestionList()">
 
-        <div class="quiz-display">
-          <div id="quiz-progress" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;"></div>
-          <div id="question-text" class="question-title">「問題を開始」ボタンを押してください</div>
-          <div id="result-message" class="result-message"></div>
-          <div id="primary-answer" class="primary-answer-display"></div>
-        </div>
-
-        <div class="quiz-inputs">
-          <input type="text" id="user-answer" class="input-field" placeholder="解答を入力..." disabled onkeydown="if(event.key==='Enter') handleQuizAction()">
-          <button id="action-btn" class="btn btn-primary" onclick="handleQuizAction()">問題を開始</button>
-          <button id="grad-btn" class="btn btn-success" style="display: none;" onclick="manualGraduate()">覚えた！(卒業)</button>
-        </div>
-      </div>
-
-      <!-- 問題登録・一括登録エリア -->
-      <div class="card">
-        <h2>問題の登録</h2>
-        
-        <div class="tab-buttons">
-          <button class="tab-btn active" id="tab-single-btn" onclick="switchTab('single')">1問ずつ登録</button>
-          <button class="tab-btn" id="tab-bulk-btn" onclick="switchTab('bulk')">Excel等から一括登録</button>
-        </div>
-
-        <!-- 1問登録フォーム -->
-        <div id="single-form" class="register-form">
-          <div class="form-group">
-            <label for="reg-question">問題文</label>
-            <input type="text" id="reg-question" class="input-field" placeholder="例: 日本の首都は？">
-          </div>
-          <div class="form-group">
-            <label for="reg-answer">解答（表記揺れはカンマ「,」で区切る ※一番左が基本解答）</label>
-            <input type="text" id="reg-answer" class="input-field" placeholder="例: 東京,とうきょう,tokyo">
-          </div>
-          <button class="btn btn-primary" onclick="addSingleQuestion()">追加する</button>
-        </div>
-
-        <!-- 一括登録フォーム -->
-        <div id="bulk-form" class="register-form" style="display: none;">
-          <div class="form-group">
-            <label for="bulk-input">タブ区切りテキスト（1行につき「問題 [TAB] 解答」）</label>
-            <textarea id="bulk-input" class="input-field" placeholder="例：&#10;日本の首都は？&#t東京,とうきょう&#10;リンゴの英訳は？&#tapple,アップル"></textarea>
-          </div>
-          <button class="btn btn-primary" onclick="addBulkQuestions()">一括追加する</button>
-        </div>
-      </div>
+    <div class="question-list" id="question-list-container">
+      <!-- 問題リストがJSでここに入ります -->
     </div>
   </div>
 
-  <script>
-    // --- データ構造 & 初期化 ---
-    const STORAGE_KEY = 'quiz_memorizer_data';
-    let questions = [];
+  <!-- 右カラム：問題エリア & 登録エリア -->
+  <div>
+    <!-- 問題カード -->
+    <div class="card">
+      <h2>問題</h2>
+      <div class="mode-buttons">
+        <span style="font-weight: bold; font-size: 0.9em; color: #333;">出題モード:</span>
+        <button class="btn-mode active" onclick="setMode(10)">10問</button>
+        <button class="btn-mode" onclick="setMode(50)">50問</button>
+        <button class="btn-mode" onclick="setMode(100)">100問</button>
+        <button class="btn-mode" onclick="setMode('all')">全問</button>
+      </div>
 
-    // クイズのセット管理用変数
-    let currentQuizList = [];
-    let currentQuizIndex = 0;
-    let currentQuestion = null;
-    let isAnswered = false; // 回答後の「次の問題へ」待ち状態フラグ
+      <div class="question-status">
+        <span id="progress-text">進行度: 0 / 0 問目</span>
+        <span id="correct-text">正解回数: 0 / 5</span>
+      </div>
 
-    // 初期読み込み
-    window.onload = () => {
-      loadQuestions();
-      renderQuestionList();
-    };
+      <div class="question-title" id="current-question-text">
+        問題を登録してください。
+      </div>
 
-    // ローカルストレージ読み込み
-    function loadQuestions() {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (data) {
-        try {
-          questions = JSON.parse(data);
-        } catch (e) {
-          questions = [];
-        }
-      }
-    }
+      <input type="text" class="input-answer" id="user-answer-input" placeholder="答えを入力してください">
 
-    // ローカルストレージ保存
-    function saveQuestions() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(questions));
-      renderQuestionList();
-    }
+      <div class="action-buttons">
+        <button class="btn-action btn-answer" onclick="checkAnswer()">回答する</button>
+        <button class="btn-action btn-remember" onclick="markAsRemembered()">覚えた！</button>
+        <button class="btn-action btn-dontknow" onclick="skipQuestion()">分からない</button>
+      </div>
+    </div>
 
-    // --- クイズ出題・進行ロジック ---
+    <!-- 登録カード -->
+    <div class="card">
+      <h3>問題を登録する</h3>
+      <div class="tab-buttons">
+        <button class="btn-tab active" id="tab-single" onclick="switchTab('single')">1問ずつ登録</button>
+        <button class="btn-tab inactive" id="tab-excel" onclick="switchTab('excel')">Excelから一括登録</button>
+      </div>
 
-    // 出題セッションのリセット
-    function resetQuizSession() {
-      currentQuizList = [];
-      currentQuizIndex = 0;
-      currentQuestion = null;
-      isAnswered = false;
+      <!-- 単体登録フォーム -->
+      <div id="form-single">
+        <div class="form-group">
+          <label class="form-label">【問題文】</label>
+          <textarea id="single-q" rows="3" placeholder="例：日本の首都は？"></textarea>
+        </div>
 
-      document.getElementById('question-text').textContent = '「問題を開始」ボタンを押してください';
-      document.getElementById('result-message').textContent = '';
-      document.getElementById('primary-answer').textContent = '';
-      document.getElementById('quiz-progress').textContent = '';
-      document.getElementById('user-answer').value = '';
-      document.getElementById('user-answer').disabled = true;
+        <div class="form-group">
+          <label class="form-label">
+            【正解の文字】 <span style="color:red; font-size:0.8em; font-weight:normal;">※複数ある場合は「、」やカンマで区切る</span>
+          </label>
+          <input type="text" class="form-input" id="single-a" placeholder="例：東京、とうきょう、トウキョウ">
+        </div>
 
-      const actionBtn = document.getElementById('action-btn');
-      actionBtn.textContent = '問題を開始';
-      actionBtn.className = 'btn btn-primary';
-      document.getElementById('grad-btn').style.display = 'none';
-    }
+        <button class="btn-submit" onclick="addSingleQuestion()">問題を登録</button>
+      </div>
 
-    // 「問題を開始 / 回答する / 次の問題へ」のメインアクション分岐
-    function handleQuizAction() {
-      if (!currentQuestion && !isAnswered) {
-        // まだクイズが始まっていない場合 -> 開始
-        nextQuestion();
-      } else if (!isAnswered) {
-        // 回答入力後の判定処理
-        checkAnswer();
-      } else {
-        // 「次の問題へ」が押された場合
-        nextQuestion();
-      }
-    }
+      <!-- 一括登録フォーム -->
+      <div id="form-excel" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">【Tab区切りデータ】（Excel等からコピペ）</label>
+          <textarea id="excel-data" rows="5" placeholder="問題文[Tab]解答1,解答2... の形式で貼り付けてください"></textarea>
+        </div>
+        <button class="btn-submit" onclick="addBulkQuestions()">一括登録を実行</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    // 次の問題をセットから取得して表示
-    function nextQuestion() {
-      const activeQuestions = questions.filter(q => (q.correctCount || 0) < 5);
+<script>
+  let questions = JSON.parse(localStorage.getItem('quiz_questions') || '[]');
+  let currentIndex = 0;
 
-      if (activeQuestions.length === 0) {
-        alert('出題できる問題がありません。新しい問題を登録するか、正解数をリセットしてください。');
-        resetQuizSession();
-        return;
-      }
+  function saveData() {
+    localStorage.setItem('quiz_questions', JSON.stringify(questions));
+    updateCounts();
+    renderQuestionList();
+  }
 
-      // セットが未作成、または現在のセットを解き終わった場合に新しいセットを構築
-      if (currentQuizList.length === 0 || currentQuizIndex >= currentQuizList.length) {
-        // 未卒業問題をシャッフル
-        const shuffled = [...activeQuestions].sort(() => Math.random() - 0.5);
-        
-        // 選択モード（10, 50, 100, all）に応じてセットを作成（完全重複なし）
-        const mode = document.getElementById('quiz-mode').value;
-        let count = shuffled.length;
-        if (mode === '10') count = Math.min(10, shuffled.length);
-        else if (mode === '50') count = Math.min(50, shuffled.length);
-        else if (mode === '100') count = Math.min(100, shuffled.length);
+  function updateCounts() {
+    document.getElementById('total-count').textContent = questions.length;
+    const completed = questions.filter(q => q.correctCount >= 5).length;
+    document.getElementById('completed-count').textContent = completed;
+    document.getElementById('uncompleted-count').textContent = questions.length - completed;
+  }
 
-        currentQuizList = shuffled.slice(0, count);
-        currentQuizIndex = 0;
-      }
+  function renderQuestionList() {
+    const container = document.getElementById('question-list-container');
+    const search = document.getElementById('search-input').value.toLowerCase();
+    container.innerHTML = '';
 
-      // セットから現在の問題を取得
-      currentQuestion = currentQuizList[currentQuizIndex];
-      currentQuizIndex++;
-      isAnswered = false;
-
-      // 画面描画の更新
-      document.getElementById('quiz-progress').textContent = `セット進捗: ${currentQuizIndex} / ${currentQuizList.length} 問目`;
-      document.getElementById('question-text').textContent = currentQuestion.question;
-      document.getElementById('result-message').textContent = '';
-      document.getElementById('primary-answer').textContent = '';
-      
-      const input = document.getElementById('user-answer');
-      input.value = '';
-      input.disabled = false;
-      input.focus();
-
-      const actionBtn = document.getElementById('action-btn');
-      actionBtn.textContent = '回答する';
-      actionBtn.className = 'btn btn-primary';
-      document.getElementById('grad-btn').style.display = 'inline-block';
-    }
-
-    // 解答チェック
-    function checkAnswer() {
-      const inputVal = document.getElementById('user-answer').value.trim().toLowerCase();
-      if (!inputVal) return;
-
-      // 表記揺れ（カンマや読点区切り）のリストを取得
-      const validAnswers = currentQuestion.answer
-        .split(/[,、]/)
-        .map(a => a.trim().toLowerCase());
-
-      const isCorrect = validAnswers.includes(inputVal);
-
-      // 元の回答文字列の「一番左（基本解答）」を取得
-      const primaryAnswer = currentQuestion.answer.split(/[,、]/)[0].trim();
-
-      const resultEl = document.getElementById('result-message');
-      const primaryAnsEl = document.getElementById('primary-answer');
-
-      if (isCorrect) {
-        resultEl.textContent = '⭕️ 正解！';
-        resultEl.className = 'result-message correct';
-        currentQuestion.correctCount = (currentQuestion.correctCount || 0) + 1;
-      } else {
-        resultEl.textContent = '❌ 不正解...';
-        resultEl.className = 'result-message incorrect';
-      }
-
-      // 回答後の結果表示（一番左の基本解答のみ表示）
-      primaryAnsEl.textContent = `正解：${primaryAnswer}`;
-
-      saveQuestions(); // 正解数を永続化
-
-      // 状態を「回答完了」へ移行
-      isAnswered = true;
-      document.getElementById('user-answer').disabled = true;
-
-      const actionBtn = document.getElementById('action-btn');
-      actionBtn.textContent = '次の問題へ';
-      actionBtn.className = 'btn btn-secondary';
-      actionBtn.focus();
-    }
-
-    // 手動で卒業（覚えた！）にするボタン
-    function manualGraduate() {
-      if (!currentQuestion) return;
-      currentQuestion.correctCount = 5;
-      saveQuestions();
-      alert('この問題を「覚えた（卒業）」に設定しました。');
-      nextQuestion();
-    }
-
-    // --- 問題登録関連 ---
-
-    function switchTab(type) {
-      document.getElementById('tab-single-btn').classList.toggle('active', type === 'single');
-      document.getElementById('tab-bulk-btn').classList.toggle('active', type === 'bulk');
-      document.getElementById('single-form').style.display = type === 'single' ? 'flex' : 'none';
-      document.getElementById('bulk-form').style.display = type === 'bulk' ? 'flex' : 'none';
-    }
-
-    // 1問追加
-    function addSingleQuestion() {
-      const qInput = document.getElementById('reg-question');
-      const aInput = document.getElementById('reg-answer');
-      const qVal = qInput.value.trim();
-      const aVal = aInput.value.trim();
-
-      if (!qVal || !aVal) {
-        alert('問題文と解答の両方を入力してください。');
-        return;
-      }
-
-      questions.push({
-        id: Date.now().toString(),
-        question: qVal,
-        answer: aVal,
-        correctCount: 0
-      });
-
-      saveQuestions();
-      qInput.value = '';
-      aInput.value = '';
-      alert('問題を追加しました。');
-    }
-
-    // 一括追加
-    function addBulkQuestions() {
-      const bulkInput = document.getElementById('bulk-input');
-      const lines = bulkInput.value.split('\n');
-      let addedCount = 0;
-
-      lines.forEach(line => {
-        const parts = line.split('\t');
-        if (parts.length >= 2) {
-          const qVal = parts[0].trim();
-          const aVal = parts[1].trim();
-          if (qVal && aVal) {
-            questions.push({
-              id: Date.now().toString() + Math.random(),
-              question: qVal,
-              answer: aVal,
-              correctCount: 0
-            });
-            addedCount++;
-          }
-        }
-      });
-
-      if (addedCount > 0) {
-        saveQuestions();
-        bulkInput.value = '';
-        alert(`${addedCount} 件の問題を一括追加しました。`);
-      } else {
-        alert('有効なデータが見つかりませんでした。タブ区切りで「問題 [TAB] 解答」の形式で入力してください。');
-      }
-    }
-
-    // --- サイドバー（一覧・編集・削除） ---
-
-    function renderQuestionList() {
-      const listEl = document.getElementById('question-list');
-      const searchVal = document.getElementById('search-input').value.toLowerCase();
-      document.getElementById('total-count').textContent = questions.length;
-
-      listEl.innerHTML = '';
-
-      const filtered = questions.filter(q => 
-        q.question.toLowerCase().includes(searchVal) || 
-        q.answer.toLowerCase().includes(searchVal)
-      );
-
-      filtered.forEach(q => {
-        const isGraduated = (q.correctCount || 0) >= 5;
+    questions.forEach((q, index) => {
+      if (q.question.toLowerCase().includes(search) || q.answers.join(',').toLowerCase().includes(search)) {
         const item = document.createElement('div');
-        item.className = `question-item ${isGraduated ? 'graduated' : ''}`;
-
-        // 一番左の基本解答を表示用に切り出し
-        const primaryAns = q.answer.split(/[,、]/)[0].trim();
+        item.className = 'question-item';
+        
+        const isGraduated = q.correctCount >= 5;
+        const statusText = isGraduated ? '【🎓卒業】' : `(正解:${q.correctCount || 0}/5)`;
 
         item.innerHTML = `
-          <div class="question-info">
-            <div class="question-text">${escapeHtml(q.question)}</div>
-            <div class="answer-text">解: ${escapeHtml(primaryAns)}</div>
+          <div class="question-item-text">
+            <strong>Q. ${escapeHtml(q.question)}</strong> <span style="color:#888;">${statusText}</span>
           </div>
-          <div class="item-actions">
-            <span class="badge ${isGraduated ? 'graduated' : ''}">${q.correctCount || 0}/5</span>
-            <button class="btn-sm btn-edit" onclick="resetSingleCount('${q.id}')">リセット</button>
-            <button class="btn-sm btn-delete" onclick="deleteQuestion('${q.id}')">削除</button>
-          </div>
+          <button class="btn-edit" onclick="deleteQuestion(${index})">削除</button>
         `;
-        listEl.appendChild(item);
-      });
+        container.appendChild(item);
+      }
+    });
+  }
+
+  function addSingleQuestion() {
+    const qText = document.getElementById('single-q').value.trim();
+    const aText = document.getElementById('single-a').value.trim();
+
+    if (!qText || !aText) {
+      alert('問題文と正解の文字を入力してください');
+      return;
     }
 
-    function deleteQuestion(id) {
-      if (confirm('この問題を削除しますか？')) {
-        questions = questions.filter(q => q.id !== id);
-        saveQuestions();
-        if (currentQuestion && currentQuestion.id === id) {
-          resetQuizSession();
+    const answers = aText.split(/[、,]/).map(a => a.trim()).filter(a => a.length > 0);
+    questions.push({ question: qText, answers: answers, correctCount: 0 });
+    
+    document.getElementById('single-q').value = '';
+    document.getElementById('single-a').value = '';
+    saveData();
+    if(questions.length === 1) loadQuestion(0);
+  }
+
+  function addBulkQuestions() {
+    const raw = document.getElementById('excel-data').value.trim();
+    if (!raw) return;
+
+    const lines = raw.split('\n');
+    let addedCount = 0;
+
+    lines.forEach(line => {
+      const parts = line.split('\t');
+      if (parts.length >= 2) {
+        const q = parts[0].trim();
+        const a = parts[1].trim().split(/[、,]/).map(item => item.trim());
+        if (q && a.length > 0) {
+          questions.push({ question: q, answers: a, correctCount: 0 });
+          addedCount++;
         }
       }
-    }
+    });
 
-    function resetSingleCount(id) {
-      const target = questions.find(q => q.id === id);
-      if (target) {
-        target.correctCount = 0;
-        saveQuestions();
-      }
-    }
+    document.getElementById('excel-data').value = '';
+    saveData();
+    alert(`${addedCount}問の登録が完了しました！`);
+    if(questions.length === addedCount) loadQuestion(0);
+  }
 
-    // HTMLエスケープヘルパー
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  function deleteQuestion(index) {
+    if (confirm('この問題を削除しますか？')) {
+      questions.splice(index, 1);
+      saveData();
+      if (questions.length > 0) loadQuestion(0);
+      else resetDisplay();
     }
-  </script>
+  }
+
+  function loadQuestion(index) {
+    if (questions.length === 0) return;
+    currentIndex = index;
+    const q = questions[currentIndex];
+    document.getElementById('current-question-text').textContent = q.question;
+    document.getElementById('progress-text').textContent = `進行度: ${currentIndex + 1} / ${questions.length} 問目`;
+    document.getElementById('correct-text').textContent = `正解回数: ${q.correctCount || 0} / 5`;
+    document.getElementById('user-answer-input').value = '';
+  }
+
+  function checkAnswer() {
+    if (questions.length === 0) return;
+    const input = document.getElementById('user-answer-input').value.trim().toLowerCase();
+    const currentQ = questions[currentIndex];
+
+    if (currentQ.answers.some(a => a.toLowerCase() === input)) {
+      alert(`正解です！【解答: ${currentQ.answers[0]}】`);
+      currentQ.correctCount = (currentQ.correctCount || 0) + 1;
+      saveData();
+      nextQuestion();
+    } else {
+      alert(`不正解です…… 正解は: ${currentQ.answers[0]}`);
+    }
+  }
+
+  function markAsRemembered() {
+    if (questions.length === 0) return;
+    questions[currentIndex].correctCount = 5;
+    saveData();
+    nextQuestion();
+  }
+
+  function skipQuestion() {
+    if (questions.length === 0) return;
+    alert(`正解は: ${questions[currentIndex].answers[0]}`);
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    if (currentIndex + 1 < questions.length) {
+      loadQuestion(currentIndex + 1);
+    } else {
+      alert('すべての問題を解き終えました！');
+      loadQuestion(0);
+    }
+  }
+
+  function resetDisplay() {
+    document.getElementById('current-question-text').textContent = '問題を登録してください。';
+    document.getElementById('progress-text').textContent = '進行度: 0 / 0 問目';
+    document.getElementById('correct-text').textContent = '正解回数: 0 / 5';
+  }
+
+  function switchTab(tab) {
+    if (tab === 'single') {
+      document.getElementById('form-single').style.display = 'block';
+      document.getElementById('form-excel').style.display = 'none';
+      document.getElementById('tab-single').className = 'btn-tab active';
+      document.getElementById('tab-excel').className = 'btn-tab inactive';
+    } else {
+      document.getElementById('form-single').style.display = 'none';
+      document.getElementById('form-excel').style.display = 'block';
+      document.getElementById('tab-single').className = 'btn-tab inactive';
+      document.getElementById('tab-excel').className = 'btn-tab active';
+    }
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // 初期ロード
+  updateCounts();
+  renderQuestionList();
+  if (questions.length > 0) loadQuestion(0);
+</script>
+
 </body>
 </html>

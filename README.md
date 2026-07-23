@@ -9,8 +9,7 @@
 
 ## 📸 アプリ画面
 
-<!-- ↓ GitHubのREADME編集画面で、ここにスクリーンショット画像を直接ドラッグ＆ドロップしてください -->
-![アプリのスクリーンショット](ここに画像をドラッグ＆ドロップ)
+<img width="1535" height="893" alt="スクリーンショット 2026-07-23 174208" src="https://github.com/user-attachments/assets/005dfe1c-dfb6-40a7-be45-bf05f7e40296" />
 
 ---
 
